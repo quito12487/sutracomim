@@ -1,0 +1,27 @@
+{
+  "name": "chatnode",
+  "version": "1.0.0",
+  "description": "testing chat",
+  "main": "chatapp.js",
+  "dependencies": {
+    "express": "*",
+    "socket.io": "*"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node chatapp.js"
+  },
+  "engines":{
+    "node" : "6.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quito12487/sutracomim.git"
+  },
+  "author": "christopher",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/quito12487/sutracomim/issues"
+  },
+  "homepage": "https://github.com/quito12487/sutracomim#readme"
+}

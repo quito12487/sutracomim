@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title> chat con nodejs + socket.io</title>
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript" src="//code.jquery.com/jquery-3.1.1.min.js"></script>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/css/bootstrap-select.min.css" >
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/js/bootstrap-select.min.js"></script>
+	
+	<style type="text/css">
+		.input-group-btn:first-child>.btn, .input-group-btn:first-child>.btn-group {height: 46px;}
+		#content{display: none;}
+		#chatContent{float: left;}
+		#chat{
+			position: relative;
+			width: 100%;
+			float: left;
+			min-height: 100%;
+			height: 90%;
+			overflow: auto;
+		}
+	</style>
+</head>
+<body>
+<script type="text/javascript">
+	var socket = io();
+	
+	$(function(){
+		
+		var nickname = $("#nickname");
+		var setnick = $("#setnick");
+	
+
+		$("form").submit(function(){
+			var mensaje = $("#msj").val();
+			if(mensaje=='') return false;
+			socket.emit('message',mensaje,nickname.val());
+			$("#msj").val('').focus();
+			return false;
+		});
+
+		$("#selectChannel").change(function(){
+			
+			socket.emit('change channel',$("#selectChannel").val());
+		});
+
+		//funcion  de usuarios
+		setnick.click(function(e){
+			e.preventDefault();
+			socket.emit('newUser',nickname.val(),function(data){
+				if(data){
+
+					$("#micontent").hide();
+					$("#content").show();
+						socket.on('stream',function(image){
+							var img = document.getElementById('play');
+							img.src = image;
+							$("#logger").text(image);
+						});
+				}else{
+					$("#login-error").show();
+				}
+			});
+		});
+
+	});
+	socket.on('message', function(msj,usuario){
+	    $("#message").append($('<li>').text(usuario+" :"+msj));
+	});
+	socket.on('change channel', function(channel){
+		
+		$("#message").html('').append($('<li>').text('System : Bienvenido al Canal'+channel+'!'));
+	});
+
+	socket.on('usernames', function(data){
+		var usernamesString = "";
+
+		for(var username in data){
+			usernamesString += username + "<br />";
+			
+		}
+		
+		$("#users").html(usernamesString);
+	});
+
+</script>
+	<div class="container">
+	<div class="page-header">
+		<h1>CHAT SUTRACOMIM<small></br>Developed by Christopher</small></h1>
+	</div>
+
+	<div class="input-group" style="width:300px;text-align:center; margin:0 auto;" id="micontent">
+		<input type="text" id="nickname" class="form-control input-lg" placeholder="Introducir Nick" name="">
+		<span class="input-group-btn">
+			<button class="btn btn-lg btn-primary" type="submit" id="setnick">Go</button>
+		</span>
+	</div>
+
+	<div class="alert fade in alert-danger alert-dismissable" data-dismiss="alert" id="login-error" style="display:none;width:;text-align:center;">
+	<button type="button" class="close" id="closeAlert">x</button>
+		El nombre de usuario ya esta siendo utilizado.
+	</div>
+
+	<div id="content" class="row" style="heigth: 70%">
+		<div class="col-md-2"></div>
+		<div id="chatContent" class="col-md-6">
+			<div class="panel panel-success">
+		 		<div class="panel-heading">Chat</div>
+		   		<div id="chat" class="panel-body"></div>
+			<ul id="message">
+			</ul>
+			<div id="controls">
+				<form action="" id="sendMessage" class="input-group" style="text-align:center;margin:0 auto;">
+				<select  name="channel" id="selectChannel" class="selectpicker"  data-style="btn-success" >
+					
+						<option  value="channel-a"> Channel A </option>
+
+						<option  value="channel-b"> Channel B </option>
+				</select>
+					<input type="text" class="form-control input-lg"  id="msj" placeholder="Escribir el mensaje..."></input>
+					<span class="input-group-btn">
+					<button type="submit" class="btn btn-lg btn-primary" id="btn" >Enviar</button>
+					</span>
+				</form>
+		    </div>
+			
+		
+		</div>
+		</div>
+		<div class="col-md-2">
+				<div class="panel panel-info">
+					<div class="panel-heading">
+							Usuarios Conectados
+					</div>
+					<div class="panel-body" id="users"></div>
+				</div>
+
+
+				<video src="" id="video" style="width:220px; height:180px;display:none;" autoplay="true"></video>
+				<canvas id="preview" style="display:none;"></canvas>
+				<!--<div id="logger"></div>-->
+				<img id="play">
+				<script type="text/javascript">
+					var canvas = document.getElementById("preview");
+					var context = canvas.getContext("2d");
+					canvas.width = 220;
+					canvas.height = 180;
+					context.width = canvas.width;
+					context.height = canvas.height;
+					var video = document.getElementById("video");
+					var socket = io();
+					function logger(msg){
+						$("#logger").text(msg);
+					}
+					function loadCam(stream){
+						video.src = window.URL.createObjectURL(stream);
+							logger('Camara cargada correctamente.');
+					}
+					function loadFail(){
+						logger('Camara no conectada, por favor revise su camara.');
+					}
+					function viewVideo(video, context){
+						context.drawImage(video,0,0,context.width,context.height);
+						socket.emit('stream',canvas.toDataURL('image/webp'));
+
+					}
+					$(function(){
+							navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msgGetUserMedia);
+							if(navigator.getUserMedia){
+								navigator.getUserMedia({video : true}, loadCam,loadFail);
+							}
+							//1000 =1seg
+
+							setInterval(function(){
+								viewVideo(video,context);
+							},50);
+					});
+				</script>
+			</div>
+	</div>
+		
+		
+		
+			
+
+	</div>
+</body>
+</html>
