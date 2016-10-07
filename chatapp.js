@@ -1,7 +1,7 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var PORT = process.env.PORT || 8080;
+var PORT = process.env.PORT || 5000;
 nicknames = {};
 
 app.get('/',function(req,res){
